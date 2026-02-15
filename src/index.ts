@@ -7,8 +7,11 @@ import { registerAccountTools } from "./tools/accounts.js";
 import { registerProductTools } from "./tools/products.js";
 import { registerConsumptionTools } from "./tools/consumption.js";
 import { registerTariffTools } from "./tools/tariffs.js";
+import { registerAccountResource } from "./resources/account.js";
 
 const OCTOPUS_ENERGY_API_KEY = process.env.OCTOPUS_ENERGY_API_KEY;
+const OCTOPUS_ENERGY_ACCOUNT_NUMBER =
+  process.env.OCTOPUS_ENERGY_ACCOUNT_NUMBER;
 
 if (!OCTOPUS_ENERGY_API_KEY) {
   console.error(
@@ -16,17 +19,27 @@ if (!OCTOPUS_ENERGY_API_KEY) {
   );
 }
 
+if (!OCTOPUS_ENERGY_ACCOUNT_NUMBER) {
+  console.error(
+    "WARNING: OCTOPUS_ENERGY_ACCOUNT_NUMBER not set. Consumption tools will require explicit MPAN/MPRN and serial numbers."
+  );
+}
+
 const client = new OctopusEnergyClient(OCTOPUS_ENERGY_API_KEY);
 
 const server = new McpServer({
   name: "octopus-energy-mcp",
-  version: "1.0.0",
+  version: "1.1.0",
 });
 
 registerAccountTools(server, client);
 registerProductTools(server, client);
-registerConsumptionTools(server, client);
+registerConsumptionTools(server, client, OCTOPUS_ENERGY_ACCOUNT_NUMBER);
 registerTariffTools(server, client);
+
+if (OCTOPUS_ENERGY_API_KEY && OCTOPUS_ENERGY_ACCOUNT_NUMBER) {
+  registerAccountResource(server, client, OCTOPUS_ENERGY_ACCOUNT_NUMBER);
+}
 
 async function main() {
   const transport = new StdioServerTransport();

@@ -9,6 +9,7 @@ Some endpoints (products, tariff rates) are publicly available without authentic
 
 ## Features
 
+- **Account Auto-Discovery** - Configure your account number once and meter details (MPAN, MPRN, serial numbers, tariffs) are discovered automatically
 - **Account** - Retrieve account details, properties, meter points, and tariff agreements
 - **Products** - List and search available energy products/tariffs with filters
 - **Consumption** - Get half-hourly electricity and gas consumption data with aggregation options
@@ -54,8 +55,11 @@ npm start
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `OCTOPUS_ENERGY_API_KEY` | No* | Your Octopus Energy API key |
+| `OCTOPUS_ENERGY_ACCOUNT_NUMBER` | No** | Your Octopus Energy account number (e.g., `A-1234ABCD`) |
 
 *Required for account and consumption endpoints. Product and tariff endpoints work without authentication.
+
+**Recommended. Enables auto-discovery of meter details (MPAN, MPRN, serial numbers) and exposes an account resource so Claude can look up your meter details automatically.
 
 ### Claude Desktop
 
@@ -68,7 +72,8 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
       "command": "npx",
       "args": ["-y", "octopus-energy-mcp"],
       "env": {
-        "OCTOPUS_ENERGY_API_KEY": "sk_live_your_api_key_here"
+        "OCTOPUS_ENERGY_API_KEY": "sk_live_your_api_key_here",
+        "OCTOPUS_ENERGY_ACCOUNT_NUMBER": "A-1234ABCD"
       }
     }
   }
@@ -86,7 +91,8 @@ Add to your project's `.mcp.json`:
       "command": "npx",
       "args": ["-y", "octopus-energy-mcp"],
       "env": {
-        "OCTOPUS_ENERGY_API_KEY": "sk_live_your_api_key_here"
+        "OCTOPUS_ENERGY_API_KEY": "sk_live_your_api_key_here",
+        "OCTOPUS_ENERGY_ACCOUNT_NUMBER": "A-1234ABCD"
       }
     }
   }
@@ -98,7 +104,7 @@ Add to your project's `.mcp.json`:
 The server communicates via stdio. Run the binary and connect your MCP client to stdin/stdout:
 
 ```bash
-OCTOPUS_ENERGY_API_KEY=sk_live_... npx octopus-energy-mcp
+OCTOPUS_ENERGY_API_KEY=sk_live_... OCTOPUS_ENERGY_ACCOUNT_NUMBER=A-1234ABCD npx octopus-energy-mcp
 ```
 
 ## Architecture
@@ -111,6 +117,8 @@ octopus-energy-mcp/
 │   ├── utils.ts              # Shared utilities (responses, logging)
 │   ├── client.test.ts        # Client tests
 │   ├── utils.test.ts         # Utils tests
+│   ├── resources/
+│   │   └── account.ts        # Account auto-discovery resource
 │   └── tools/
 │       ├── accounts.ts       # Account endpoint
 │       ├── products.ts       # Product listing and details
@@ -123,6 +131,16 @@ octopus-energy-mcp/
 ```
 
 The client uses HTTP Basic Auth (API key as username, blank password) per the Octopus Energy API specification. Public endpoints skip authentication entirely.
+
+## Resources
+
+When `OCTOPUS_ENERGY_ACCOUNT_NUMBER` is configured, the server exposes an MCP resource:
+
+| Resource URI | Description |
+|-------------|-------------|
+| `octopus-energy://account` | Account details including properties, meter points (MPAN/MPRN), serial numbers, and active tariffs |
+
+Claude reads this resource automatically to discover your meter details, so you can ask about consumption without providing MPAN/MPRN/serial numbers manually.
 
 ## Tools Reference
 
@@ -152,7 +170,9 @@ The client uses HTTP Basic Auth (API key as username, blank password) per the Oc
 | `octopus_energy_get_electricity_consumption` | Get electricity meter consumption | Yes | `GET /v1/electricity-meter-points/{mpan}/meters/{serial}/consumption/` |
 | `octopus_energy_get_gas_consumption` | Get gas meter consumption | Yes | `GET /v1/gas-meter-points/{mprn}/meters/{serial}/consumption/` |
 
-**Parameters:** `mpan`/`mprn` (required), `serial_number` (required), `period_from`, `period_to`, `page_size`, `order_by`, `group_by`, `page` (optional)
+**Parameters:** `mpan`/`mprn` (auto-discovered or explicit), `serial_number` (auto-discovered or explicit), `period_from`, `period_to`, `page_size`, `order_by`, `group_by`, `page` (optional)
+
+When `OCTOPUS_ENERGY_ACCOUNT_NUMBER` is configured, `mpan`/`mprn` and `serial_number` are auto-discovered from your account. You can still provide them explicitly to query a specific meter if you have multiple.
 
 ### Tariffs
 
@@ -233,6 +253,9 @@ Ensure `npx` is available in your PATH. Try running `npx octopus-energy-mcp` in 
 
 ### Gas consumption values seem wrong
 SMETS1 meters return consumption in kWh, while SMETS2 meters return cubic meters. You may need to convert cubic meters to kWh using the calorific value and volume correction factor.
+
+### "MPAN and serial number are required"
+Either provide `mpan`/`mprn` and `serial_number` explicitly, or set `OCTOPUS_ENERGY_ACCOUNT_NUMBER` to enable auto-discovery.
 
 ## License
 

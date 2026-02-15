@@ -6,13 +6,18 @@ startCommand:
       octopusEnergyApiKey:
         type: string
         description: Your Octopus Energy API key (found in your online account dashboard)
+      octopusEnergyAccountNumber:
+        type: string
+        description: Your Octopus Energy account number (e.g., A-1234ABCD). Enables auto-discovery of meter details.
   commandFunction: |
     (config) => ({
       command: 'npx',
       args: ['-y', 'octopus-energy-mcp'],
       env: {
-        ...(config.octopusEnergyApiKey ? { OCTOPUS_ENERGY_API_KEY: config.octopusEnergyApiKey } : {})
+        ...(config.octopusEnergyApiKey ? { OCTOPUS_ENERGY_API_KEY: config.octopusEnergyApiKey } : {}),
+        ...(config.octopusEnergyAccountNumber ? { OCTOPUS_ENERGY_ACCOUNT_NUMBER: config.octopusEnergyAccountNumber } : {})
       }
     })
   exampleConfig:
     octopusEnergyApiKey: "sk_live_your_api_key_here"
+    octopusEnergyAccountNumber: "A-1234ABCD"
