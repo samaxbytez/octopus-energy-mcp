@@ -1,0 +1,18 @@
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      octopusEnergyApiKey:
+        type: string
+        description: Your Octopus Energy API key (found in your online account dashboard)
+  commandFunction: |
+    (config) => ({
+      command: 'npx',
+      args: ['-y', 'octopus-energy-mcp'],
+      env: {
+        ...(config.octopusEnergyApiKey ? { OCTOPUS_ENERGY_API_KEY: config.octopusEnergyApiKey } : {})
+      }
+    })
+  exampleConfig:
+    octopusEnergyApiKey: "sk_live_your_api_key_here"
