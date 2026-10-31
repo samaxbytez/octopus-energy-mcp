@@ -1,13 +1,13 @@
-const BASE_URL = "https://api.octopus.energy/v1";
+const BASE_URL = new URL("https://api.octopus.energy/v1/");
+const BASE_PATH = "/v1/";
+const TIMEOUT_MS = 30_000;
 
 export class OctopusEnergyApiError extends Error {
   public readonly status: number;
   public readonly errorCode: string;
 
   constructor(status: number, errorCode: string, message: string) {
-    super(
-      `Octopus Energy API error (${status}): ${errorCode} - ${message}`
-    );
+    super(`Octopus Energy API error (${status}): ${errorCode} - ${message}`);
     this.name = "OctopusEnergyApiError";
     this.status = status;
     this.errorCode = errorCode;
@@ -16,17 +16,35 @@ export class OctopusEnergyApiError extends Error {
 
 function parseApiError(
   status: number,
-  body: string
+  body: string,
+  retryAfter: string | null
 ): OctopusEnergyApiError {
+  const retry = status === 429 && retryAfter ? ` (retry after ${retryAfter}s)` : "";
   try {
     const parsed = JSON.parse(body);
     const code = parsed?.error ?? parsed?.code ?? parsed?.detail ?? "unknown";
     const message =
       parsed?.message ?? parsed?.detail ?? parsed?.error_description ?? `HTTP ${status}`;
-    return new OctopusEnergyApiError(status, code, message);
+    return new OctopusEnergyApiError(status, code, `${message}${retry}`);
   } catch {
-    return new OctopusEnergyApiError(status, "unknown", `HTTP ${status} error`);
+    // Never echo non-JSON bodies.
+    return new OctopusEnergyApiError(status, "unknown", `HTTP ${status} error${retry}`);
   }
+}
+
+/** Resolve a request path against the API base, refusing anything that escapes it. */
+export function resolveApiUrl(path: string): URL {
+  if (
+    /^[a-z][a-z0-9+.-]*:|^\/\/|\\|\.\.|%2e|%2f|%5c/i.test(path) ||
+    [...path].some((c) => c.charCodeAt(0) <= 0x1f || c.charCodeAt(0) === 0x7f)
+  ) {
+    throw new Error("Invalid request path");
+  }
+  const url = new URL(path.replace(/^\/+/, ""), BASE_URL);
+  if (url.origin !== BASE_URL.origin || !url.pathname.startsWith(BASE_PATH)) {
+    throw new Error("Invalid request path");
+  }
+  return url;
 }
 
 export class OctopusEnergyClient {
@@ -41,16 +59,8 @@ export class OctopusEnergyClient {
     params?: Record<string, string>,
     requiresAuth = false
   ): Promise<T> {
-    return this.request<T>("GET", path, params, requiresAuth);
-  }
-
-  private async request<T = unknown>(
-    method: string,
-    path: string,
-    params?: Record<string, string>,
-    requiresAuth = false
-  ): Promise<T> {
-    const url = new URL(path, BASE_URL);
+    // Callers pass paths like "/v1/products/"; the base already ends in /v1/.
+    const url = resolveApiUrl(path.replace(/^\/?v1\//, ""));
 
     if (params) {
       for (const [k, v] of Object.entries(params)) {
@@ -69,22 +79,34 @@ export class OctopusEnergyClient {
         );
       }
       // Octopus Energy uses HTTP Basic Auth: API key as username, blank password
-      const encoded = btoa(`${this.apiKey}:`);
-      headers["Authorization"] = `Basic ${encoded}`;
+      headers["Authorization"] = `Basic ${btoa(`${this.apiKey}:`)}`;
     }
 
     const response = await fetch(url.toString(), {
-      method,
+      method: "GET",
       headers,
+      redirect: "error",
+      signal: AbortSignal.timeout(TIMEOUT_MS),
     });
 
     if (!response.ok) {
-      const errorBody = await response.text();
-      throw parseApiError(response.status, errorBody);
+      throw parseApiError(
+        response.status,
+        await response.text(),
+        response.headers.get("Retry-After")
+      );
     }
 
     const text = await response.text();
     if (!text) return {} as T;
-    return JSON.parse(text) as T;
+    try {
+      return JSON.parse(text) as T;
+    } catch {
+      throw new OctopusEnergyApiError(
+        response.status,
+        "invalid_response",
+        "Response was not valid JSON"
+      );
+    }
   }
 }

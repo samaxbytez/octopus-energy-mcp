@@ -1,12 +1,8 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { idSchema, READ_ONLY_ANNOTATIONS } from "../schemas.js";
 import { OctopusEnergyClient } from "../client.js";
-import {
-  jsonResponse,
-  errorResponse,
-  logToolCall,
-  buildParams,
-} from "../utils.js";
+import { jsonResponse, errorResponse, logToolCall, buildParams } from "../utils.js";
 
 export function registerTariffTools(
   server: McpServer,
@@ -18,15 +14,12 @@ export function registerTariffTools(
       title: "Get Electricity Standard Unit Rates",
       description:
         "Retrieve standard unit rates for an electricity tariff. Returns prices including/excluding VAT. Does not require authentication. Useful for Agile, Go, and other tariff pricing.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
-        product_code: z
-          .string()
-          .describe("The product code (e.g., AGILE-FLEX-22-11-25)"),
-        tariff_code: z
-          .string()
-          .describe(
-            "The tariff code (e.g., E-1R-AGILE-FLEX-22-11-25-C)"
-          ),
+        product_code: idSchema.describe("The product code (e.g., AGILE-FLEX-22-11-25)"),
+        tariff_code: idSchema.describe(
+          "The tariff code (e.g., E-1R-AGILE-FLEX-22-11-25-C)"
+        ),
         period_from: z
           .string()
           .optional()
@@ -75,17 +68,12 @@ export function registerTariffTools(
       title: "Get Electricity Standing Charges",
       description:
         "Retrieve standing charges for an electricity tariff. Returns daily standing charge including/excluding VAT. Does not require authentication.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
-        product_code: z.string().describe("The product code"),
-        tariff_code: z.string().describe("The tariff code"),
-        period_from: z
-          .string()
-          .optional()
-          .describe("Start of period in ISO 8601 format"),
-        period_to: z
-          .string()
-          .optional()
-          .describe("End of period in ISO 8601 format"),
+        product_code: idSchema.describe("The product code"),
+        tariff_code: idSchema.describe("The tariff code"),
+        period_from: z.string().optional().describe("Start of period in ISO 8601 format"),
+        period_to: z.string().optional().describe("End of period in ISO 8601 format"),
         page: z.number().int().positive().optional().describe("Page number"),
         page_size: z
           .number()
@@ -119,19 +107,12 @@ export function registerTariffTools(
       title: "Get Electricity Day Unit Rates",
       description:
         "Retrieve day unit rates for a dual-register electricity tariff (Economy 7/10). Does not require authentication.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
-        product_code: z.string().describe("The product code"),
-        tariff_code: z
-          .string()
-          .describe("The dual-register tariff code"),
-        period_from: z
-          .string()
-          .optional()
-          .describe("Start of period in ISO 8601 format"),
-        period_to: z
-          .string()
-          .optional()
-          .describe("End of period in ISO 8601 format"),
+        product_code: idSchema.describe("The product code"),
+        tariff_code: idSchema.describe("The dual-register tariff code"),
+        period_from: z.string().optional().describe("Start of period in ISO 8601 format"),
+        period_to: z.string().optional().describe("End of period in ISO 8601 format"),
         page: z.number().int().positive().optional().describe("Page number"),
         page_size: z
           .number()
@@ -165,19 +146,12 @@ export function registerTariffTools(
       title: "Get Electricity Night Unit Rates",
       description:
         "Retrieve night unit rates for a dual-register electricity tariff (Economy 7/10). Does not require authentication.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
-        product_code: z.string().describe("The product code"),
-        tariff_code: z
-          .string()
-          .describe("The dual-register tariff code"),
-        period_from: z
-          .string()
-          .optional()
-          .describe("Start of period in ISO 8601 format"),
-        period_to: z
-          .string()
-          .optional()
-          .describe("End of period in ISO 8601 format"),
+        product_code: idSchema.describe("The product code"),
+        tariff_code: idSchema.describe("The dual-register tariff code"),
+        period_from: z.string().optional().describe("Start of period in ISO 8601 format"),
+        period_to: z.string().optional().describe("End of period in ISO 8601 format"),
         page: z.number().int().positive().optional().describe("Page number"),
         page_size: z
           .number()
@@ -211,17 +185,12 @@ export function registerTariffTools(
       title: "Get Gas Standard Unit Rates",
       description:
         "Retrieve standard unit rates for a gas tariff. Returns prices including/excluding VAT. Does not require authentication.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
-        product_code: z.string().describe("The product code"),
-        tariff_code: z.string().describe("The gas tariff code"),
-        period_from: z
-          .string()
-          .optional()
-          .describe("Start of period in ISO 8601 format"),
-        period_to: z
-          .string()
-          .optional()
-          .describe("End of period in ISO 8601 format"),
+        product_code: idSchema.describe("The product code"),
+        tariff_code: idSchema.describe("The gas tariff code"),
+        period_from: z.string().optional().describe("Start of period in ISO 8601 format"),
+        period_to: z.string().optional().describe("End of period in ISO 8601 format"),
         page: z.number().int().positive().optional().describe("Page number"),
         page_size: z
           .number()
@@ -255,17 +224,12 @@ export function registerTariffTools(
       title: "Get Gas Standing Charges",
       description:
         "Retrieve standing charges for a gas tariff. Returns daily standing charge including/excluding VAT. Does not require authentication.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
-        product_code: z.string().describe("The product code"),
-        tariff_code: z.string().describe("The gas tariff code"),
-        period_from: z
-          .string()
-          .optional()
-          .describe("Start of period in ISO 8601 format"),
-        period_to: z
-          .string()
-          .optional()
-          .describe("End of period in ISO 8601 format"),
+        product_code: idSchema.describe("The product code"),
+        tariff_code: idSchema.describe("The gas tariff code"),
+        period_from: z.string().optional().describe("Start of period in ISO 8601 format"),
+        period_to: z.string().optional().describe("End of period in ISO 8601 format"),
         page: z.number().int().positive().optional().describe("Page number"),
         page_size: z
           .number()

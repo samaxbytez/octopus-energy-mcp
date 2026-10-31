@@ -42,8 +42,7 @@ function extractMeters(accountData: any): MeterInfo {
         const now = new Date().toISOString();
         const activeTariff =
           agreements.find(
-            (a: any) =>
-              a.valid_from <= now && (!a.valid_to || a.valid_to >= now)
+            (a: any) => a.valid_from <= now && (!a.valid_to || a.valid_to >= now)
           )?.tariff_code ?? null;
         meters.electricity.push({
           mpan,
@@ -60,8 +59,7 @@ function extractMeters(accountData: any): MeterInfo {
         const now = new Date().toISOString();
         const activeTariff =
           agreements.find(
-            (a: any) =>
-              a.valid_from <= now && (!a.valid_to || a.valid_to >= now)
+            (a: any) => a.valid_from <= now && (!a.valid_to || a.valid_to >= now)
           )?.tariff_code ?? null;
         meters.gas.push({
           mprn,
@@ -79,12 +77,16 @@ export async function getAccountDetails(
   client: OctopusEnergyClient,
   accountNumber: string
 ): Promise<AccountDetails> {
-  if (cachedDetails && Date.now() - cacheTimestamp < CACHE_TTL_MS) {
+  if (
+    cachedDetails &&
+    cachedDetails.account_number === accountNumber &&
+    Date.now() - cacheTimestamp < CACHE_TTL_MS
+  ) {
     return cachedDetails;
   }
 
   const data = await client.get(
-    `/v1/accounts/${accountNumber}/`,
+    `/v1/accounts/${encodeURIComponent(accountNumber)}/`,
     undefined,
     true
   );
@@ -120,7 +122,7 @@ export function registerAccountResource(
           {
             uri: "octopus-energy://account",
             mimeType: "application/json",
-            text: JSON.stringify(details, null, 2),
+            text: JSON.stringify(details),
           },
         ],
       };

@@ -12,11 +12,9 @@ function createMockServer() {
   const tools = new Map<string, ToolHandler>();
   return {
     server: {
-      registerTool: vi.fn(
-        (name: string, _config: unknown, cb: ToolHandler) => {
-          tools.set(name, cb);
-        }
-      ),
+      registerTool: vi.fn((name: string, _config: unknown, cb: ToolHandler) => {
+        tools.set(name, cb);
+      }),
     } as any,
     tools,
   };
@@ -55,11 +53,7 @@ describe("registerAccountTools", () => {
     const handler = tools.get("octopus_energy_get_account")!;
     const result = await handler({ account_number: "A-1234ABCD" });
 
-    expect(client.get).toHaveBeenCalledWith(
-      "/v1/accounts/A-1234ABCD/",
-      undefined,
-      true
-    );
+    expect(client.get).toHaveBeenCalledWith("/v1/accounts/A-1234ABCD/", undefined, true);
     expect(result.content[0].type).toBe("text");
     expect(JSON.parse(result.content[0].text)).toEqual({ data: "mock" });
   });
@@ -174,9 +168,7 @@ describe("registerConsumptionTools", () => {
     const result = await handler({});
 
     expect(result.isError).toBe(true);
-    expect(result.content[0].text).toContain(
-      "MPAN and serial number are required"
-    );
+    expect(result.content[0].text).toContain("MPAN and serial number are required");
   });
 
   it("auto-discovers electricity meter from account when mpan/serial omitted", async () => {
@@ -273,9 +265,7 @@ describe("registerTariffTools", () => {
     const client = createMockClient();
     registerTariffTools(server, client);
 
-    const handler = tools.get(
-      "octopus_energy_get_electricity_standard_unit_rates"
-    )!;
+    const handler = tools.get("octopus_energy_get_electricity_standard_unit_rates")!;
     await handler({
       product_code: "AGILE-FLEX-22-11-25",
       tariff_code: "E-1R-AGILE-FLEX-22-11-25-C",
@@ -311,9 +301,7 @@ describe("registerTariffTools", () => {
     (client.get as any).mockRejectedValue(new Error("not found"));
     registerTariffTools(server, client);
 
-    const handler = tools.get(
-      "octopus_energy_get_electricity_standing_charges"
-    )!;
+    const handler = tools.get("octopus_energy_get_electricity_standing_charges")!;
     const result = await handler({
       product_code: "TEST",
       tariff_code: "E-1R-TEST-C",

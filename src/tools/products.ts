@@ -1,12 +1,8 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { idSchema, READ_ONLY_ANNOTATIONS } from "../schemas.js";
 import { OctopusEnergyClient } from "../client.js";
-import {
-  jsonResponse,
-  errorResponse,
-  logToolCall,
-  buildParams,
-} from "../utils.js";
+import { jsonResponse, errorResponse, logToolCall, buildParams } from "../utils.js";
 
 export function registerProductTools(
   server: McpServer,
@@ -18,27 +14,13 @@ export function registerProductTools(
       title: "List Products",
       description:
         "List available energy products/tariffs. Does not require authentication. Supports filtering by brand, variable/fixed, business/domestic, green, and prepay.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
-        brand: z
-          .string()
-          .optional()
-          .describe("Filter by brand (e.g., OCTOPUS_ENERGY)"),
-        is_variable: z
-          .boolean()
-          .optional()
-          .describe("Filter for variable tariffs only"),
-        is_business: z
-          .boolean()
-          .optional()
-          .describe("Filter for business tariffs only"),
-        is_green: z
-          .boolean()
-          .optional()
-          .describe("Filter for green tariffs only"),
-        is_prepay: z
-          .boolean()
-          .optional()
-          .describe("Filter for prepay tariffs only"),
+        brand: z.string().optional().describe("Filter by brand (e.g., OCTOPUS_ENERGY)"),
+        is_variable: z.boolean().optional().describe("Filter for variable tariffs only"),
+        is_business: z.boolean().optional().describe("Filter for business tariffs only"),
+        is_green: z.boolean().optional().describe("Filter for green tariffs only"),
+        is_prepay: z.boolean().optional().describe("Filter for prepay tariffs only"),
         available_at: z
           .string()
           .optional()
@@ -53,7 +35,15 @@ export function registerProductTools(
           .describe("Page number for pagination (default 1)"),
       },
     },
-    async ({ brand, is_variable, is_business, is_green, is_prepay, available_at, page }) => {
+    async ({
+      brand,
+      is_variable,
+      is_business,
+      is_green,
+      is_prepay,
+      available_at,
+      page,
+    }) => {
       logToolCall("octopus_energy_list_products", {
         brand,
         is_variable,
@@ -89,12 +79,11 @@ export function registerProductTools(
       title: "Get Product Details",
       description:
         "Retrieve detailed information about a specific product including its tariffs, standing charges, and unit rates. Does not require authentication.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
-        product_code: z
-          .string()
-          .describe(
-            "The product code (e.g., AGILE-FLEX-22-11-25, GO-VAR-22-10-14)"
-          ),
+        product_code: idSchema.describe(
+          "The product code (e.g., AGILE-FLEX-22-11-25, GO-VAR-22-10-14)"
+        ),
         tariffs_active_at: z
           .string()
           .optional()

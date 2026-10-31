@@ -8,10 +8,10 @@ import { registerProductTools } from "./tools/products.js";
 import { registerConsumptionTools } from "./tools/consumption.js";
 import { registerTariffTools } from "./tools/tariffs.js";
 import { registerAccountResource } from "./resources/account.js";
+import { VERSION } from "./version.js";
 
 const OCTOPUS_ENERGY_API_KEY = process.env.OCTOPUS_ENERGY_API_KEY;
-const OCTOPUS_ENERGY_ACCOUNT_NUMBER =
-  process.env.OCTOPUS_ENERGY_ACCOUNT_NUMBER;
+const OCTOPUS_ENERGY_ACCOUNT_NUMBER = process.env.OCTOPUS_ENERGY_ACCOUNT_NUMBER;
 
 if (!OCTOPUS_ENERGY_API_KEY) {
   console.error(
@@ -29,7 +29,7 @@ const client = new OctopusEnergyClient(OCTOPUS_ENERGY_API_KEY);
 
 const server = new McpServer({
   name: "octopus-energy-mcp",
-  version: "1.1.0",
+  version: VERSION,
 });
 
 registerAccountTools(server, client);

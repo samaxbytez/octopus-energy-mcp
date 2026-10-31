@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { idSchema, READ_ONLY_ANNOTATIONS } from "../schemas.js";
 import { OctopusEnergyClient } from "../client.js";
 import { jsonResponse, errorResponse, logToolCall } from "../utils.js";
 
@@ -13,10 +13,11 @@ export function registerAccountTools(
       title: "Get Account",
       description:
         "Retrieve account details including properties, meter points (MPAN/MPRN), meter serial numbers, and current/historical tariff agreements. Requires authentication.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
-        account_number: z
-          .string()
-          .describe("The Octopus Energy account number (e.g., A-AAAA1111)"),
+        account_number: idSchema.describe(
+          "The Octopus Energy account number (e.g., A-AAAA1111)"
+        ),
       },
     },
     async ({ account_number }) => {

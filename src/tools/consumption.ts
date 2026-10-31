@@ -1,12 +1,8 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { idSchema, READ_ONLY_ANNOTATIONS } from "../schemas.js";
 import { OctopusEnergyClient } from "../client.js";
-import {
-  jsonResponse,
-  errorResponse,
-  logToolCall,
-  buildParams,
-} from "../utils.js";
+import { jsonResponse, errorResponse, logToolCall, buildParams } from "../utils.js";
 import { getAccountDetails } from "../resources/account.js";
 
 export function registerConsumptionTools(
@@ -23,31 +19,24 @@ export function registerConsumptionTools(
         (accountNumber
           ? " MPAN and serial number are optional — if omitted, they will be auto-discovered from your account."
           : ""),
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
-        mpan: z
-          .string()
+        mpan: idSchema
           .optional()
           .describe(
             "The MPAN (Meter Point Administration Number). Optional if account number is configured."
           ),
-        serial_number: z
-          .string()
+        serial_number: idSchema
           .optional()
-          .describe(
-            "The meter serial number. Optional if account number is configured."
-          ),
+          .describe("The meter serial number. Optional if account number is configured."),
         period_from: z
           .string()
           .optional()
-          .describe(
-            "Start of period in ISO 8601 format (e.g., 2024-01-01T00:00Z)"
-          ),
+          .describe("Start of period in ISO 8601 format (e.g., 2024-01-01T00:00Z)"),
         period_to: z
           .string()
           .optional()
-          .describe(
-            "End of period in ISO 8601 format (e.g., 2024-01-31T23:59Z)"
-          ),
+          .describe("End of period in ISO 8601 format (e.g., 2024-01-31T23:59Z)"),
         page_size: z
           .number()
           .int()
@@ -58,9 +47,7 @@ export function registerConsumptionTools(
         order_by: z
           .enum(["period", "-period"])
           .optional()
-          .describe(
-            "Sort order: 'period' for oldest first, '-period' for newest first"
-          ),
+          .describe("Sort order: 'period' for oldest first, '-period' for newest first"),
         group_by: z
           .enum(["day", "week", "month", "quarter"])
           .optional()
@@ -139,31 +126,24 @@ export function registerConsumptionTools(
         (accountNumber
           ? " MPRN and serial number are optional — if omitted, they will be auto-discovered from your account."
           : ""),
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
-        mprn: z
-          .string()
+        mprn: idSchema
           .optional()
           .describe(
             "The MPRN (Meter Point Reference Number). Optional if account number is configured."
           ),
-        serial_number: z
-          .string()
+        serial_number: idSchema
           .optional()
-          .describe(
-            "The meter serial number. Optional if account number is configured."
-          ),
+          .describe("The meter serial number. Optional if account number is configured."),
         period_from: z
           .string()
           .optional()
-          .describe(
-            "Start of period in ISO 8601 format (e.g., 2024-01-01T00:00Z)"
-          ),
+          .describe("Start of period in ISO 8601 format (e.g., 2024-01-01T00:00Z)"),
         period_to: z
           .string()
           .optional()
-          .describe(
-            "End of period in ISO 8601 format (e.g., 2024-01-31T23:59Z)"
-          ),
+          .describe("End of period in ISO 8601 format (e.g., 2024-01-31T23:59Z)"),
         page_size: z
           .number()
           .int()
@@ -174,9 +154,7 @@ export function registerConsumptionTools(
         order_by: z
           .enum(["period", "-period"])
           .optional()
-          .describe(
-            "Sort order: 'period' for oldest first, '-period' for newest first"
-          ),
+          .describe("Sort order: 'period' for oldest first, '-period' for newest first"),
         group_by: z
           .enum(["day", "week", "month", "quarter"])
           .optional()

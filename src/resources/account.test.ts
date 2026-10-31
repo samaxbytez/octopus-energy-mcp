@@ -59,11 +59,7 @@ describe("getAccountDetails", () => {
     const client = createMockClient();
     const details = await getAccountDetails(client, "A-TEST1234");
 
-    expect(client.get).toHaveBeenCalledWith(
-      "/v1/accounts/A-TEST1234/",
-      undefined,
-      true
-    );
+    expect(client.get).toHaveBeenCalledWith("/v1/accounts/A-TEST1234/", undefined, true);
     expect(details.account_number).toBe("A-TEST1234");
     expect(details.meters.electricity).toHaveLength(1);
     expect(details.meters.electricity[0]).toEqual({
