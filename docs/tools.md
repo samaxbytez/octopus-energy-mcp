@@ -47,4 +47,4 @@ List responses include the API's `count`, `next` and `previous` fields. Pass `pa
 
 ## Resource
 
-`octopus-energy://account` (only when both env vars are set): account details with properties, meters and active tariffs.
+`octopus-energy://account` (only when both env vars are set): account number, properties, meters and active tariffs.

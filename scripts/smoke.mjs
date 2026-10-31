@@ -15,7 +15,11 @@ if (Object.keys(pkg.dependencies ?? {}).length) fail("package has runtime depend
 const transport = new StdioClientTransport({
   command: process.execPath,
   args: ["build/index.js"],
-  env: { PATH: process.env.PATH, OCTOPUS_ENERGY_API_KEY: "", OCTOPUS_ENERGY_ACCOUNT_NUMBER: "" },
+  env: {
+    PATH: process.env.PATH,
+    OCTOPUS_ENERGY_API_KEY: "",
+    OCTOPUS_ENERGY_ACCOUNT_NUMBER: "",
+  },
   stderr: "ignore",
 });
 const client = new Client({ name: "smoke", version: "0.0.0" });

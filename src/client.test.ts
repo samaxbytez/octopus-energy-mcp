@@ -179,3 +179,26 @@ describe("OctopusEnergyClient - request hardening", () => {
     expect(err.message).not.toContain("secret");
   });
 });
+
+describe("OctopusEnergyClient - response limits", () => {
+  it("clips long and non-string error fields", async () => {
+    mockFetch.mockResolvedValueOnce(
+      mockError(500, { error: { nested: true }, message: "m".repeat(5000) })
+    );
+    const err = await new OctopusEnergyClient().get("/v1/products/").catch((e) => e);
+    expect(err.message).not.toContain("[object Object]");
+    expect(err.message.length).toBeLessThan(500);
+  });
+
+  it("refuses oversized bodies", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      text: async () => "x".repeat(5_000_001),
+    } as Response);
+    await expect(new OctopusEnergyClient().get("/v1/products/")).rejects.toThrow(
+      "too large"
+    );
+  });
+});

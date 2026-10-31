@@ -1,6 +1,11 @@
 const BASE_URL = new URL("https://api.octopus.energy/v1/");
 const BASE_PATH = "/v1/";
 const TIMEOUT_MS = 30_000;
+const MAX_BODY_CHARS = 5_000_000;
+const MAX_ERROR_CHARS = 300;
+
+const clip = (v: unknown, fallback: string): string =>
+  typeof v === "string" && v ? v.slice(0, MAX_ERROR_CHARS) : fallback;
 
 export class OctopusEnergyApiError extends Error {
   public readonly status: number;
@@ -22,9 +27,11 @@ function parseApiError(
   const retry = status === 429 && retryAfter ? ` (retry after ${retryAfter}s)` : "";
   try {
     const parsed = JSON.parse(body);
-    const code = parsed?.error ?? parsed?.code ?? parsed?.detail ?? "unknown";
-    const message =
-      parsed?.message ?? parsed?.detail ?? parsed?.error_description ?? `HTTP ${status}`;
+    const code = clip(parsed?.error ?? parsed?.code ?? parsed?.detail, "unknown");
+    const message = clip(
+      parsed?.message ?? parsed?.detail ?? parsed?.error_description,
+      `HTTP ${status}`
+    );
     return new OctopusEnergyApiError(status, code, `${message}${retry}`);
   } catch {
     // Never echo non-JSON bodies.
@@ -98,6 +105,13 @@ export class OctopusEnergyClient {
     }
 
     const text = await response.text();
+    if (text.length > MAX_BODY_CHARS) {
+      throw new OctopusEnergyApiError(
+        response.status,
+        "response_too_large",
+        "Response too large; reduce page_size or narrow the period"
+      );
+    }
     if (!text) return {} as T;
     try {
       return JSON.parse(text) as T;

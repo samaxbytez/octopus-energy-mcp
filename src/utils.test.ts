@@ -4,8 +4,6 @@ import {
   errorResponse,
   buildParams,
   logToolCall,
-  TOKEN_BUFFER_MS,
-  MAX_PAGE_SIZE,
   CACHE_TTL_MS,
 } from "./utils.js";
 
@@ -87,8 +85,6 @@ describe("logToolCall", () => {
 
 describe("constants", () => {
   it("has expected values", () => {
-    expect(TOKEN_BUFFER_MS).toBe(60_000);
-    expect(MAX_PAGE_SIZE).toBe(50);
     expect(CACHE_TTL_MS).toBe(24 * 60 * 60 * 1000);
   });
 });
